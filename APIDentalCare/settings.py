@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     #APPS PROPIAS
     'recepcion',
     'paciente_api',
+    'usuarios',
 
     #APPS MODULOS
     'rest_framework',
@@ -142,5 +143,9 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
 }
+
+AUTH_USER_MODEL = 'usuarios.UsuarioPersonalizado'
+
+LOGIN_URL = '/usuarios/signin/'
 
 
