@@ -5,6 +5,33 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from django.shortcuts import get_object_or_404
+from .serializer import (
+    UsuarioPersonalizadoSerializer
+)
+from .models import UsuarioPersonalizado
+
+@api_view(['POST'])
+def login(request):
+    print(request.data)
+    user= get_object_or_404(UsuarioPersonalizado, username=request.data['username'])
+
+    if not user.check_password(request.data['password']):
+        return Response({"error":"Password incorrecto"})
+    
+    token,created= Token.objects.get_or_create(user=user)
+    serializer= UsuarioPersonalizadoSerializer(instance=user)
+
+    return Response({"token":token.key, "user":serializer.data})
+
+@api_view(['POST'])
+def register(request):
+    return Response({})
+
+
 # Create your views here.
 def signin(request):
     if request.method == 'GET':
