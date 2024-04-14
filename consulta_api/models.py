@@ -16,12 +16,11 @@ class ConsultaModel(models.Model):
         verbose_name_plural= 'Consultas'
 
     def __str__(self) -> str:
-        return f"Paciente: {self.paciente}, Doctor: {self.doctor}, Motivo de la consulta: {self.motivo_consulta}, Descripcion: {self.descripcion}, Fecha: {self.fecha} "
+        return f"Paciente: {self.paciente.persona}, Doctor: {self.doctor.persona}, Motivo de la consulta: {self.motivo_consulta}, Descripcion: {self.descripcion}, Fecha: {self.fecha} "
     
 class TratamientoModel(models.Model):
     nombre = models.CharField(max_length=45, verbose_name="Nombre del tratamiento")
     precio =  models.DecimalField(verbose_name="Precio", decimal_places=2,max_digits=9)
-    consulta = models.ManyToManyField(ConsultaModel,related_name="Tratamientos_Consulta", verbose_name="Consulta")
     
     class Meta:
         db_table='Tratamiento'
@@ -30,3 +29,15 @@ class TratamientoModel(models.Model):
 
     def __str__(self) -> str:
         return f"Nombre del tratamiento: {self.nombre}, Precio: {self.precio}"
+    
+class TratamientoConsultaModel(models.Model):
+    consulta = models.ForeignKey(ConsultaModel, verbose_name="Consulta", on_delete=models.CASCADE)
+    tratamiento = models.ForeignKey(TratamientoModel, verbose_name="Tratamiento", on_delete=models.CASCADE)
+    
+    class Meta:
+        db_table='Tratamiento_Consulta'
+        verbose_name= 'Tratamiento_Consulta'
+        verbose_name_plural= 'Tratamientos_Consulta'
+    
+    def __str__(self) -> str:
+        return f"Tratamiento: {self.tratamiento}, Consulta: {self.consulta.id}"
