@@ -3,11 +3,22 @@ from recepcion.models import PacienteModel
 from usuarios.models import UsuarioPersonalizado
 
 # Create your models here.
+class ExpedienteModel(models.Model):
+    fecha_creacion = models.DateField(auto_now_add=True, verbose_name="Fecha de creacion")
+    paciente = models.OneToOneField(PacienteModel, on_delete=models.CASCADE, verbose_name='Paciente')
+    class Meta:
+        db_table='Expediente'
+        verbose_name= 'Expediente'
+        verbose_name_plural= 'Expedientes'
+    
+    def __str__(self) -> str:
+        return f"Id Expediente: {self.id}, Paciente: {self.paciente.persona}, Fecha de creacion: {self.fecha_creacion}"
+
 class ConsultaModel(models.Model):
     motivo_consulta = models.TextField(max_length=200, verbose_name="Motivo de la consulta")
     descripcion = models.TextField(max_length=100, verbose_name="Descripcion")
     fecha = models.DateField(auto_now_add=True, verbose_name="Fecha de la consulta")
-    paciente = models.ForeignKey(PacienteModel, on_delete=models.CASCADE, verbose_name='Paciente')
+    expediente = models.ForeignKey(ExpedienteModel, on_delete=models.CASCADE, verbose_name='Expediente', related_name="Expediente_Consulta")
     doctor = models.ForeignKey(UsuarioPersonalizado, on_delete=models.CASCADE, verbose_name='Doctor de la consulta')
     
     class Meta:
@@ -16,7 +27,7 @@ class ConsultaModel(models.Model):
         verbose_name_plural= 'Consultas'
 
     def __str__(self) -> str:
-        return f"Paciente: {self.paciente.persona}, Doctor: {self.doctor.persona}, Motivo de la consulta: {self.motivo_consulta}, Descripcion: {self.descripcion}, Fecha: {self.fecha} "
+        return f"ID Expediente: {self.expediente.id},Paciente: {self.expediente.paciente.persona}, Doctor: {self.doctor.persona}, Motivo de la consulta: {self.motivo_consulta}, Descripcion: {self.descripcion}, Fecha: {self.fecha} "
     
 class TratamientoModel(models.Model):
     nombre = models.CharField(max_length=45, verbose_name="Nombre del tratamiento")
@@ -41,3 +52,4 @@ class TratamientoConsultaModel(models.Model):
     
     def __str__(self) -> str:
         return f"Tratamiento: {self.tratamiento}, Consulta: {self.consulta.id}"
+
