@@ -3,7 +3,7 @@ from django.contrib.auth.hashers import make_password
 
 # Create your models here.
 class PersonaModel(models.Model):
-    dni=models.CharField(max_length=15, verbose_name='Dni', null=False, blank=False)
+    dni=models.CharField(max_length=15, verbose_name='Dni', null=False, blank=False, unique=True)
     primer_nombre = models.CharField(max_length=75, verbose_name="Primer Nombre")
     segundo_nombre = models.CharField(max_length=75, null=True,blank=True ,verbose_name="Segundo Nombre")
     primer_apellido = models.CharField(max_length=75, verbose_name="Primer Apellido")
@@ -18,11 +18,17 @@ class PersonaModel(models.Model):
         return f'{self.primer_nombre} {self.primer_apellido}'
 
 class PacienteModel(models.Model):
+    genero_choises = (
+        ('M', 'Masculino'),
+        ('F', 'Femenino'),
+        ('O', 'Otro'),
+    )
+    
     correo=models.EmailField(null=False, verbose_name='Correo')
     telefono=models.CharField(max_length=15, verbose_name='Telefono')
     fecha_nacimiento=models.DateField(verbose_name='Fecha Nacimiento', null=False, blank=False)
     direccion= models.TextField(max_length=100, verbose_name='Direccion')
-    genero= models.CharField(max_length=1, verbose_name='Genero')
+    genero= models.CharField(max_length=1, verbose_name='Genero', choices=genero_choises)
     persona= models.OneToOneField(PersonaModel, verbose_name='Persona', related_name='pacientes', on_delete=models.CASCADE)
 
     class Meta:
@@ -31,7 +37,7 @@ class PacienteModel(models.Model):
         verbose_name_plural= 'Pacientes'
 
     def __str__(self) -> str:
-        return self.correo
+        return str(self.persona)
     
 # class UsuarioModel(models.Model):
 #     username=models.CharField(max_length=75, null=False, blank=False, verbose_name='Nombre Usuario')
