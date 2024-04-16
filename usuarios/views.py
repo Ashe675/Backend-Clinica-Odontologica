@@ -1,72 +1,46 @@
-from django.shortcuts import redirect, render
-from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .serializer import (
-    UsuarioPersonalizadoSerializer
-)
+from .serializer import UsuarioPersonalizadoSerializer
 from .models import UsuarioPersonalizado
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+
 
 @api_view(['POST'])
 def login(request):
-    print(request.data)
-    user= get_object_or_404(UsuarioPersonalizado, username=request.data['username'])
-
-    if not user.check_password(request.data['password']):
-        return Response({"error":"Password incorrecto"})
+    try:
+        username = request.data['username']
+        user = UsuarioPersonalizado.objects.get(username=username)
+        if not user.check_password(request.data['password']):
+            return Response({
+                'error':"Invalid Password"}, status= status.HTTP_400_BAD_REQUEST)
+        token, created = Token.objects.get_or_create(user=user)
+        serializer = UsuarioPersonalizadoSerializer(instance=user)
+        return Response({
+            "token": token.key,
+            "user": serializer.data},
+            status=status.HTTP_200_OK)
+    except UsuarioPersonalizado.DoesNotExist:
+        return Response({"error": "El Usuario no existe"}, status=status.HTTP_404_NOT_FOUND)
+    except:
+        return Response({"error":"Please provide valid data"}, status=status.HTTP_400_BAD_REQUEST)
+        
     
-    token,created= Token.objects.get_or_create(user=user)
-    serializer= UsuarioPersonalizadoSerializer(instance=user)
 
-    return Response({"token":token.key, "user":serializer.data})
 
 @api_view(['POST'])
-def register(request):
-    return Response({})
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def profile(request):
+    serializer = UsuarioPersonalizadoSerializer(instance=request.user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-# Create your views here.
-@csrf_exempt
-def signin(request):
-    if request.method == 'GET':
-        context = {
-            'form': AuthenticationForm
-        }
-        return render(request,'signin.html', context)
-    else:
-        data = json.loads(request.body)
-        print(data)
-        username = data.get('username')
-        password = data.get('password')
-        print(username)
-        print(password)
-        user = authenticate(request, username = username, password = password)
-        if user is None:
-            context = {
-            'form': AuthenticationForm,
-            'error': 'Username or password is incorrect'
-            }
-            #return render(request,'signin.html', context)
-            return JsonResponse({'error': 'Invalid credentials'}, status=400)
-        else:
-            login(request, user)
-            #return render(request,'login.html')
-            return JsonResponse({'token': 'your_generated_token'})
-
-@login_required
-def home(request):
-    return render(request,'login.html')
-
-@login_required
-def signout(request):
-    logout(request)
-    return redirect('home')
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    request.user.auth_token.delete()
+    return Response({"message":"Token Borrado!"}, status=status.HTTP_200_OK)

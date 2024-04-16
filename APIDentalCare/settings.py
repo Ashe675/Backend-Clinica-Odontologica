@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     #APPS PROPIAS
     'recepcion',
     'paciente_api',
+    'consulta_api',
     'usuarios',
 
     #APPS MODULOS
