@@ -31,7 +31,7 @@ class ConsultaModel(models.Model):
     
 class TratamientoModel(models.Model):
     nombre = models.CharField(max_length=45, verbose_name="Nombre del tratamiento")
-    precio =  models.DecimalField(verbose_name="Precio", decimal_places=2,max_digits=9)
+    precio =  models.IntegerField(verbose_name="Precio")
     
     class Meta:
         db_table='Tratamiento'
@@ -42,7 +42,7 @@ class TratamientoModel(models.Model):
         return f"Nombre del tratamiento: {self.nombre}, Precio: {self.precio}"
     
 class TratamientoConsultaModel(models.Model):
-    consulta = models.ForeignKey(ConsultaModel, verbose_name="Consulta", on_delete=models.CASCADE)
+    consulta = models.ForeignKey(ConsultaModel, verbose_name="Consulta", on_delete=models.CASCADE, related_name="tratamientos")
     tratamiento = models.ForeignKey(TratamientoModel, verbose_name="Tratamiento", on_delete=models.CASCADE)
     
     class Meta:
