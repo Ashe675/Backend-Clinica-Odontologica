@@ -41,7 +41,8 @@ def create_pacient(request):
         # Retornar=el ID del paciente y el nombre completo 
         return Response({
             'id_paciente': paciente.id,
-            'nombre_completo_persona': f'{persona.primer_nombre} {persona.primer_apellido}'
+            'nombre_completo_persona': f'{persona.primer_nombre} {persona.primer_apellido}',
+            'dni':persona.dni
         })
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
