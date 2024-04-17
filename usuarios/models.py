@@ -23,7 +23,8 @@ class UsuarioPersonalizado(AbstractUser):
         verbose_name_plural= 'Usuarios'
 
     def save(self, *args, **kwargs):
-        if self.password:
+        # Verificar si la contraseña no está encriptada
+        if self.password and not self.password.startswith('pbkdf2_sha256$'):
             self.set_password(self.password)
         super().save(*args, **kwargs)
 
