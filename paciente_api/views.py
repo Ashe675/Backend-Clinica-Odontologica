@@ -69,7 +69,7 @@ class PacienteModelAPIRetrieve(generics.RetrieveAPIView):
         else:
             return Response({"error": "Paciente no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
-#ViewSets
-class PacienteModelViewSet(viewsets.ModelViewSet):
-    queryset=PacienteModel.objects.all()
-    serializer_class=PacienteModelSerializer
+# ViewSets
+# class PacienteModelViewSet(viewsets.ModelViewSet):
+#     queryset=PacienteModel.objects.all()
+#     serializer_class=PacienteModelSerializer
