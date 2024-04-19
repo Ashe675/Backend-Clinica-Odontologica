@@ -14,9 +14,12 @@ def login(request):
     try:
         username = request.data['username']
         user = UsuarioPersonalizado.objects.get(username=username)
+        
         if not user.check_password(request.data['password']):
             return Response({
-                'error':"Invalid Password"}, status= status.HTTP_400_BAD_REQUEST)
+                'error': "Invalid Password"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         token, created = Token.objects.get_or_create(user=user)
         serializer = UsuarioPersonalizadoSerializer(instance=user)
         return Response({

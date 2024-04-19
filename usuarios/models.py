@@ -22,10 +22,10 @@ class UsuarioPersonalizado(AbstractUser):
         verbose_name= 'Usuario'
         verbose_name_plural= 'Usuarios'
 
-    def save(self, *args, **kwargs):
-        if self.password:
-            self.set_password(self.password)
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if self.password:
+    #         self.set_password(self.password)
+    #     super().save(*args, **kwargs)
 
     def __str__(self):
         return self.username
