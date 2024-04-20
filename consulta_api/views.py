@@ -117,6 +117,7 @@ def ver_factura(request):
     except ConsultaModel.DoesNotExist:
         return Response({'msg':'Consulta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
     
+
     paciente= consulta.expediente.paciente.persona
 
     doctor_id= consulta.doctor.id
@@ -126,7 +127,7 @@ def ver_factura(request):
 
     recepcionista_id= request.user.id
     recepcionista = get_object_or_404(UsuarioPersonalizado, id=recepcionista_id)
-    print(recepcionista.username)
+    #print(recepcionista.username)
     if not factura:
         return Response({'msg': 'Factura no encontrada'}, status=status.HTTP_404_NOT_FOUND)
     
