@@ -53,3 +53,19 @@ class TratamientoConsultaModel(models.Model):
     def __str__(self) -> str:
         return f"Tratamiento: {self.tratamiento}, Consulta: {self.consulta.id}"
 
+
+#FACTURACION
+class FacturaModel(models.Model):
+    consulta= models.OneToOneField(ConsultaModel, verbose_name='Consulra', on_delete=models.CASCADE)
+    estado= models.BooleanField(default=False, verbose_name='Estado')
+    fecha_emision= models.DateField(verbose_name='Fecha de Emision', null=True, blank=True)
+    recepcionista= models.ForeignKey(UsuarioPersonalizado, on_delete=models.CASCADE, verbose_name='Recepcionista que Emite la factura', null=True, blank=True)
+    monto= models.FloatField(verbose_name='Monto', default=0)
+
+    class Meta:
+        db_table='Facturas'
+        verbose_name= 'Factura'
+        verbose_name_plural= 'Facturas'
+
+    def __str__(self) -> str:
+        return f"Factura: {self.id}, Consulta: {self.consulta.id}"   

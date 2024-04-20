@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ConsultaModel, TratamientoModel, TratamientoConsultaModel, ExpedienteModel
+from .models import ConsultaModel, TratamientoModel, TratamientoConsultaModel, ExpedienteModel, FacturaModel
 
 class ConsultaModelSerializer(serializers.ModelSerializer):
     paciente = serializers.CharField(source='expediente.paciente.persona.primer_nombre',read_only=True)
@@ -39,3 +39,11 @@ class ExpedienteModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExpedienteModel
         fields = ['id_expediente','fecha_creacion','paciente']
+
+#Serializdadores Facturacion
+
+#para crear una factura con la consulta
+class FacturaModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FacturaModel
+        fields = ['consulta','monto']

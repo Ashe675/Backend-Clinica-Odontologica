@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from recepcion.models import (
     PersonaModel,
-    PacienteModel
+    PacienteModel,
 )
 
 
@@ -31,3 +31,4 @@ class ViewPacienteSerializer(serializers.ModelSerializer):
     class Meta:
         model=PacienteModel
         exclude= ['persona']
+

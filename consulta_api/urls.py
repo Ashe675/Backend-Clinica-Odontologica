@@ -5,5 +5,7 @@ urlpatterns = [
     path('create-consulta/',views.create_consulta, name='create_consulta'),
     path('expediente/',views.expediente, name='expediente'),
     path('tratamientos/',views.TratamientoModelAPIList.as_view(), name='expediente'),
+    path('factura/', views.crear_factura, name='crear_factura'),
+    path('facturas/', views.ver_factura, name='ver_factura')
 ]
 
