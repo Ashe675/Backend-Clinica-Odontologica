@@ -17,7 +17,7 @@ def login(request):
         
         if not user.check_password(request.data['password']):
             return Response({
-                'error': "Invalid Password"
+                'error': "Contraseña Incorrecta"
             }, status=status.HTTP_400_BAD_REQUEST)
         
         token, created = Token.objects.get_or_create(user=user)

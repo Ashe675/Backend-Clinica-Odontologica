@@ -14,6 +14,27 @@ from .models import TratamientoModel, ConsultaModel, ExpedienteModel, Tratamient
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 
+
+#Crear la factura al tener una nueva consulta
+def crear_factura(id_consulta):
+    consulta_Id= id_consulta
+    try:
+        consulta= ConsultaModel.objects.get(id=consulta_Id)
+    except ConsultaModel.DoesNotExist:
+        return Response({'msg':'Consulta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    
+    monto= 0
+    tratamientos= TratamientoConsultaModel.objects.filter(consulta=consulta)
+    for tratamiento in tratamientos:
+        monto+=tratamiento.tratamiento.precio
+
+    factura={'consulta':consulta_Id, 'monto':monto}
+    nueva_factura=FacturaModelSerializer(data=factura)
+    if nueva_factura.is_valid():
+            nueva_factura.save()
+            print('se creo la factura')
+    return Response(nueva_factura.errors, status=status.HTTP_400_BAD_REQUEST)
+
 # Create your views here.
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
@@ -33,6 +54,7 @@ def create_consulta(request):
             newConsulta = ConsultaModel.objects.create(**consulta)
             serializerConsulta = ConsultaModelSerializer(instance=newConsulta)
             serializerConsulta_data = serializerConsulta.data
+
             if tratamientos:
                 for tratamiento_index in tratamientos:
                     TratamientoModel.objects.get(id=tratamiento_index)
@@ -42,6 +64,8 @@ def create_consulta(request):
                 serializerConsulta_data['tratamientos'] = serializer_tratamientos_consultas.data
             else:
                 serializerConsulta_data['tratamientos'] = []
+
+            crear_factura(newConsulta.id)
             return Response(serializerConsulta_data,status=status.HTTP_200_OK)
         return Response(serializerConsulta.errors, status=status.HTTP_400_BAD_REQUEST)
     except PacienteModel.DoesNotExist:
@@ -81,28 +105,6 @@ class TratamientoModelAPIList(generics.ListAPIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-#Crear la factura al tener una nueva consulta
-@api_view(['POST'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def crear_factura(request):
-    consulta_Id= request.query_params.get('consulta')
-    try:
-        consulta= ConsultaModel.objects.get(id=consulta_Id)
-    except ConsultaModel.DoesNotExist:
-        return Response({'msg':'Consulta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
-    
-    monto= 0
-    tratamientos= TratamientoConsultaModel.objects.filter(consulta=consulta)
-    for tratamiento in tratamientos:
-        monto+=tratamiento.tratamiento.precio
-
-    factura={'consulta':consulta_Id, 'monto':monto}
-    nueva_factura=FacturaModelSerializer(data=factura)
-    if nueva_factura.is_valid():
-            nueva_factura.save()
-            return Response(nueva_factura.data, status=status.HTTP_201_CREATED)
-    return Response(nueva_factura.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 #Ver la factura
