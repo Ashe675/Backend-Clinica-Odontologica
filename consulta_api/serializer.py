@@ -47,3 +47,18 @@ class FacturaModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = FacturaModel
         fields = ['consulta','monto']
+
+#para crear una factura con la consulta
+class FacturasPendiestesSerializer(serializers.ModelSerializer):
+    consulta=ConsultaModelSerializer()
+    class Meta:
+        model = FacturaModel
+        fields = ['id', 'estado','consulta']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['consulta'] = ConsultaModelSerializer(instance.consulta).data
+        if instance.estado:
+            return None
+        else:
+            return representation

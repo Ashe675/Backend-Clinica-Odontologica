@@ -9,7 +9,8 @@ from usuarios.models import UsuarioPersonalizado
 from recepcion.models import PacienteModel
 from usuarios.serializer import UsuarioPersonalizadoSerializer
 from .serializer import( TratamientoModelSerializer, ConsultaModelSerializer, ConsultaModelSerializer2 ,
-                        ExpedienteModelSerializer, TratamientoConsultaModelSerializer, FacturaModelSerializer)
+                        ExpedienteModelSerializer, TratamientoConsultaModelSerializer, FacturaModelSerializer,
+                        FacturasPendiestesSerializer)
 from .models import TratamientoModel, ConsultaModel, ExpedienteModel, TratamientoConsultaModel, FacturaModel
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -164,3 +165,57 @@ def ver_factura(request):
     }
 
     return Response(data, status=status.HTTP_200_OK)
+
+
+#Ver la factura
+@api_view(['PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def pagar_factura(request):
+    consulta_Id= request.query_params.get('consulta_id')
+    try:
+        consulta= ConsultaModel.objects.get(id=consulta_Id)
+    except ConsultaModel.DoesNotExist:
+        return Response({'msg':'Consulta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    
+
+    factura= FacturaModel.objects.filter(consulta=consulta).first()
+    factura.estado=True
+    factura.save()
+
+    if not factura:
+        return Response({'msg': 'Factura no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+
+    return Response('Se realizo el pago exitosamente', status=status.HTTP_200_OK)
+
+
+#consultas pendiente de pago
+@api_view(['PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def consultas_pendiente(request):
+    consulta_Id= request.query_params.get('consulta_id')
+    try:
+        consulta= ConsultaModel.objects.get(id=consulta_Id)
+    except ConsultaModel.DoesNotExist:
+        return Response({'msg':'Consulta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    
+
+    factura= FacturaModel.objects.filter(consulta=consulta).first()
+    factura.estado=True
+    factura.save()
+
+    if not factura:
+        return Response({'msg': 'Factura no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+
+    return Response('Se realizo el pago exitosamente', status=status.HTTP_200_OK)
+
+
+class FacturasPendienteAPIList(generics.ListAPIView):
+    queryset = FacturaModel.objects.all()
+    serializer_class = FacturasPendiestesSerializer
+    
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
