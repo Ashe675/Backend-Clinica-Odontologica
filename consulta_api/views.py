@@ -10,7 +10,7 @@ from recepcion.models import PacienteModel
 from usuarios.serializer import UsuarioPersonalizadoSerializer
 from .serializer import( TratamientoModelSerializer, ConsultaModelSerializer, ConsultaModelSerializer2 ,
                         ExpedienteModelSerializer, TratamientoConsultaModelSerializer, FacturaModelSerializer,
-                        FacturasPendiestesSerializer)
+                        FacturasPendiestesSerializer, FacturaModelAllSerializer)
 from .models import TratamientoModel, ConsultaModel, ExpedienteModel, TratamientoConsultaModel, FacturaModel
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -81,7 +81,8 @@ def create_consulta(request):
 @permission_classes([IsAuthenticated])
 def expediente(request):
     try:
-        paciente = PacienteModel.objects.get(persona__dni=request.data['dniPaciente'])
+        dni_paciente = request.query_params.get('dniPaciente') 
+        paciente = PacienteModel.objects.get(persona__dni=dni_paciente)
         expediente, created = ExpedienteModel.objects.get_or_create(paciente=paciente)
         expediente_serializer = ExpedienteModelSerializer(instance=expediente)
         expediente_data = expediente_serializer.data
@@ -90,6 +91,14 @@ def expediente(request):
             consultas = ConsultaModel.objects.filter(expediente=expediente)
             consultas_serializer = ConsultaModelSerializer2(consultas, many=True)
             expediente_data['consultas'] = consultas_serializer.data
+            for consulta_data in expediente_data['consultas']:
+                factura = FacturaModel.objects.filter(consulta=consulta_data['id']).first()
+                if factura :
+                    factura_serializer = FacturaModelAllSerializer(factura)
+                    factura_data = factura_serializer.data
+                else:
+                    factura_data = None
+                consulta_data['factura'] = factura_data
         except ConsultaModel.DoesNotExist:
             expediente_data['consultas'] = []
         return Response(expediente_data,status=status.HTTP_200_OK)
@@ -114,7 +123,7 @@ class TratamientoModelAPIList(generics.ListAPIView):
 @permission_classes([IsAuthenticated])
 def ver_factura(request):
     #print(request.user)
-    consulta_Id= request.query_params.get('consulta_id')
+    consulta_Id= request.query_params.get('consultaId')
     try:
         consulta= ConsultaModel.objects.get(id=consulta_Id)
     except ConsultaModel.DoesNotExist:
@@ -172,7 +181,7 @@ def ver_factura(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def pagar_factura(request):
-    consulta_Id= request.query_params.get('consulta_id')
+    consulta_Id= request.query_params.get('consultaId')
     try:
         consulta= ConsultaModel.objects.get(id=consulta_Id)
     except ConsultaModel.DoesNotExist:
@@ -180,37 +189,19 @@ def pagar_factura(request):
     
 
     factura= FacturaModel.objects.filter(consulta=consulta).first()
-    factura.estado=True
-    factura.save()
+    if not factura.estado:
+        factura.estado=True
+        recepcionista_id= request.user.id
+        recepcionista = get_object_or_404(UsuarioPersonalizado, id=recepcionista_id)
+        factura.recepcionista=recepcionista
+        factura.fecha_emision= datetime.today().strftime("%Y-%m-%d")
+        factura.save()
 
     if not factura:
         return Response({'msg': 'Factura no encontrada'}, status=status.HTTP_404_NOT_FOUND)
 
 
-    return Response('Se realizo el pago exitosamente', status=status.HTTP_200_OK)
-
-
-#consultas pendiente de pago
-@api_view(['PUT'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def consultas_pendiente(request):
-    consulta_Id= request.query_params.get('consulta_id')
-    try:
-        consulta= ConsultaModel.objects.get(id=consulta_Id)
-    except ConsultaModel.DoesNotExist:
-        return Response({'msg':'Consulta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
-    
-
-    factura= FacturaModel.objects.filter(consulta=consulta).first()
-    factura.estado=True
-    factura.save()
-
-    if not factura:
-        return Response({'msg': 'Factura no encontrada'}, status=status.HTTP_404_NOT_FOUND)
-
-
-    return Response('Se realizo el pago exitosamente', status=status.HTTP_200_OK)
+    return Response({'msg':'Se realizo el pago exitosamente'}, status=status.HTTP_200_OK)
 
 
 class FacturasPendienteAPIList(generics.ListAPIView):
