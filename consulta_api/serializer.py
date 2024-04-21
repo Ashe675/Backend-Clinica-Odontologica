@@ -2,13 +2,14 @@ from rest_framework import serializers
 from .models import ConsultaModel, TratamientoModel, TratamientoConsultaModel, ExpedienteModel, FacturaModel
 
 class ConsultaModelSerializer(serializers.ModelSerializer):
+    dni_paciente = serializers.CharField(source='expediente.paciente.persona.dni',read_only=True)
     paciente = serializers.CharField(source='expediente.paciente.persona.primer_nombre',read_only=True)
     doctor = serializers.CharField(source='doctor.persona.primer_nombre',read_only=True)
     expediente_id = serializers.IntegerField(source='expediente.id',read_only=True)
     
     class Meta:
         model = ConsultaModel
-        fields = ['id','motivo_consulta', 'descripcion', 'fecha', 'paciente', 'doctor', 'expediente_id']
+        fields = ['id','motivo_consulta', 'descripcion', 'fecha','dni_paciente', 'paciente', 'doctor', 'expediente_id' ]
 
 class TratamientoModelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -48,6 +49,10 @@ class FacturaModelSerializer(serializers.ModelSerializer):
         model = FacturaModel
         fields = ['consulta','monto']
 
+class FacturaModelAllSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FacturaModel
+        fields = '__all__'
 #para crear una factura con la consulta
 class FacturasPendiestesSerializer(serializers.ModelSerializer):
     consulta=ConsultaModelSerializer()
@@ -58,7 +63,4 @@ class FacturasPendiestesSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['consulta'] = ConsultaModelSerializer(instance.consulta).data
-        if instance.estado:
-            return None
-        else:
-            return representation
+        return representation

@@ -27,7 +27,7 @@ class ConsultaModel(models.Model):
         verbose_name_plural= 'Consultas'
 
     def __str__(self) -> str:
-        return f"ID Expediente: {self.expediente.id},Paciente: {self.expediente.paciente.persona}, Doctor: {self.doctor.persona}, Motivo de la consulta: {self.motivo_consulta}, Descripcion: {self.descripcion}, Fecha: {self.fecha} "
+        return f"ID Consulta: {self.id},Paciente: {self.expediente.paciente.persona}, Doctor: {self.doctor.persona}, Motivo de la consulta: {self.motivo_consulta}, Fecha: {self.fecha} "
     
 class TratamientoModel(models.Model):
     nombre = models.CharField(max_length=45, verbose_name="Nombre del tratamiento")
@@ -56,7 +56,7 @@ class TratamientoConsultaModel(models.Model):
 
 #FACTURACION
 class FacturaModel(models.Model):
-    consulta= models.OneToOneField(ConsultaModel, verbose_name='Consulra', on_delete=models.CASCADE)
+    consulta= models.OneToOneField(ConsultaModel, verbose_name='Consulta', on_delete=models.CASCADE)
     estado= models.BooleanField(default=False, verbose_name='Estado')
     fecha_emision= models.DateField(verbose_name='Fecha de Emision', null=True, blank=True)
     recepcionista= models.ForeignKey(UsuarioPersonalizado, on_delete=models.CASCADE, verbose_name='Recepcionista que Emite la factura', null=True, blank=True)
